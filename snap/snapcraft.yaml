@@ -9,8 +9,10 @@ confinement: strict
 grade: stable
 base: core22
 architectures:
-  - amd64
-  - arm64
+  - build-on: amd64
+    build-for: amd64
+  - build-on: arm64
+    build-for: arm64
 
 apps:
   gam:
@@ -137,4 +139,4 @@ parts:
 
     override-prime: |
       craftctl default
-      snapcraftctl set-version $(bin/gam version | head -1 | awk '{print $2}')
+      craftctl set version=$(bin/gam version | head -1 | awk '{print $2}')
