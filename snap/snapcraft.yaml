@@ -8,6 +8,8 @@ adopt-info: gam
 confinement: strict
 grade: stable
 base: core22
+architectures:
+  - build-on: [ amd64, arm64 ]
 
 apps:
   gam:
