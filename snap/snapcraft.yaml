@@ -19,6 +19,8 @@ parts:
   gam:
     plugin: dump
     source: .
+    build-packages:
+      - curl
     build-snaps:
       - jq
     override-pull: |
