@@ -1,0 +1,135 @@
+name: gam
+title: GAM
+summary: GAM is a command line tool for Google Workspace admins.
+description: |
+   GAM is a command line tool that allows administrators to manage many aspects
+   of their Google Workspace (formerly G Suite / Google Apps) Account.
+adopt-info: gam
+confinement: strict
+grade: stable
+base: core22
+
+apps:
+  gam:
+    command: bin/gam
+
+parts:
+  gam:
+    plugin: dump
+    source: .
+    build-snaps:
+      - jq
+    override-pull: |
+      # based on the contents of https://gam-shortn.appspot.com/gam-install
+      # modified to build for Linux only, to use jq over python, and to be non-interactive
+      
+      target_dir="bin/"
+      target_gam="gam"
+      gamarch=$(uname -m)
+      osversion=""
+      gamversion="latest"
+      this_glibc_ver=$(ldd --version | awk '/ldd/{print $NF}')
+
+      gam_x86_64_glibc_vers="2.31"
+      gam_arm64_glibc_vers="2.31"
+
+      version_gt()
+      {
+        # MacOS < 10.13 doesn't support sort -V
+        echo "" | sort -V > /dev/null 2>&1
+        vsort_failed=$?
+        echo "Check:${2}"
+        if [ "${1}" = "${2}" ]; then
+          true
+        elif (( $vsort_failed != 0 )); then
+          false
+        else
+          test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1"
+        fi
+      }
+
+      gamos="linux"
+      if [ "$osversion" == "" ]; then
+        this_glibc_ver=$(ldd --version | awk '/ldd/{print $NF}')
+      else
+        this_glibc_ver=$osversion
+      fi
+      echo "This Linux distribution uses glibc $this_glibc_ver"
+
+      case $gamarch in
+      x86_64)
+        useglibc="legacy"
+        for gam_glibc_ver in $gam_x86_64_glibc_vers; do
+          if version_gt $this_glibc_ver $gam_glibc_ver; then
+            useglibc="glibc$gam_glibc_ver"
+            echo "Using GAM compiled against $useglibc"
+            break
+          fi
+        done
+        gamfile="linux-x86_64-$useglibc.tar.xz";;
+      arm|arm64|aarch64)
+        useglibc=""
+        for gam_glibc_ver in $gam_arm64_glibc_vers; do
+          if version_gt $this_glibc_ver $gam_glibc_ver; then
+            useglibc="glibc$gam_glibc_ver"
+            echo "Using GAM compiled against $useglibc"
+            break
+          fi
+        done
+        if [ "$useglibc" == "" ]; then
+          echo "Sorry, you need to be running at least glibc $useglibc to run GAM"
+          exit
+        fi
+        gamfile="linux-aarch64-$useglibc.tar.xz";;
+      *)
+        echo "ERROR: this installer currently only supports x86_64 and arm64 Linux. Looks like you're running on $gamarch. Exiting."
+        exit
+      esac
+
+      release_url="https://api.github.com/repos/GAM-team/GAM/releases"
+
+      check_type="unauthenticated"
+
+      echo "Checking GitHub URL $release_url for $gamversion GAM release ($check_type)..."
+      release_json=$(curl -s "$release_url")
+
+      echo "Getting file and download URL..."
+      jqurlargs='.[] | select((.prerelease="false") and (.draft="false")).assets[] | select(.browser_download_url | contains ("'
+      jqurlargs+="$gamfile"
+      jqurlargs+='")) | .browser_download_url'
+      browser_download_url=$(echo "$release_json" | jq -r "$jqurlargs" | head -1)
+      jqnameargs='.[] | select((.prerelease="false") and (.draft="false")).assets[] | select(.name | contains ("'
+      jqnameargs+="$gamfile"
+      jqnameargs+='")) | .name'
+      name=$(echo "$release_json" | jq -r "$jqnameargs" | head -1)
+      # Temp dir for archive
+      temp_archive_dir=$(mktemp -d 2>/dev/null || mktemp -d -t 'mytmpdir')
+
+      echo "Downloading file $name from $browser_download_url to $temp_archive_dir ($check_type)..."
+      # Save archive to temp w/o losing our path
+      (cd "$temp_archive_dir" && curl -O -L $browser_download_url)
+
+      mkdir -p "$target_dir"
+
+      echo "Extracting archive to $target_dir"
+      if [[ "${name}" == *.tar.xz ]]; then
+        tar --strip-components 1 -xf "$temp_archive_dir"/"$name" -C "$target_dir"
+      elif [[ "${name}" == *.tar ]]; then
+        tar --strip-components 1 -xf "$temp_archive_dir"/"$name" -C "$target_dir"
+      else
+        unzip "${temp_archive_dir}/${name}" -d "${target_dir}"
+      fi
+      rc=$?
+      if (( $rc != 0 )); then
+        echo "ERROR: extracting the GAM archive with tar failed with error $rc. Exiting."
+        exit
+      else
+        echo "Finished extracting GAM archive."
+      fi
+
+      echo "Here's information about your new GAM installation:"
+      "$target_dir/$target_gam" version extended
+
+    override-prime: |
+      craftctl default
+      snapcraftctl set-version $(bin/gam version | head -1 | awk '{print $2}')
