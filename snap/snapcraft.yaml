@@ -17,8 +17,8 @@ architectures:
 apps:
   gam:
     command: bin/gam
-  plugs:
-    - network
+    plugs:
+      - network
 
 parts:
   gam:
