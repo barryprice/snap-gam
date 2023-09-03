@@ -10,9 +10,9 @@ https://github.com/GAM-team/GAM/issues/791
 
 https://github.com/GAM-team/GAM/issues/792
 
-Per-user settings are stored in $HOME/snap/gam-bp/common/.config/gam
+Per-user settings are stored in `$HOME/snap/gam-bp/common/.config/gam`
 
-Global (immutable) settings are stored in /snap/gam-bp/current/lib/python3.10/site-packages/
+Global (immutable) settings are stored in `/snap/gam-bp/current/lib/python3.10/site-packages/`
 
 This snap adds two opinionated global settings, disabling both update checks
 (to update, refresh the snap itself instead), and also disabling short URLs.
