@@ -20,11 +20,11 @@ This snap adds two opinionated global settings, disabling both update checks
 Migrating existing authorisation settings from a manual install to the snap is
 straightforward:
 
-$ cp /path/to/manual/gam/{*.json,oauth2.txt*} ~/snap/gam-bp/common/.config/gam/
+    cp /path/to/manual/gam/{*.json,oauth2.txt*} ~/snap/gam-bp/common/.config/gam/
 
 For simplicity's sake, it's also recommended to add a snap alias:
 
-$ sudo snap alias gam-bp.gam gam
+    sudo snap alias gam-bp.gam gam
 
 Upstream: https://github.com/GAM-team/GAM
 
