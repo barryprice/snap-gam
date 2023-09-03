@@ -43,14 +43,14 @@ parts:
       # clean up
       rmdir src
       # this will be created later, but let's pre-populate it now
-      mkdir -p $CRAFT_PART_INSTALL/lib/python3.10/site-packages/
+      mkdir -p "$CRAFT_PART_INSTALL"/lib/python3.10/site-packages/
       # retrieve roots.pem and stage it in site-packages
       curl -o roots.pem https://pki.goog/roots.pem
-      mkdir -p $CRAFT_PART_INSTALL/lib/python3.10/site-packages/
-      cp roots.pem $CRAFT_PART_INSTALL/lib/python3.10/site-packages/
+      mkdir -p "$CRAFT_PART_INSTALL"/lib/python3.10/site-packages/
+      cp roots.pem "$CRAFT_PART_INSTALL"/lib/python3.10/site-packages/
       # create behavioural override files and stage them also
       touch noupdatecheck.txt noshorturls.txt
-      cp noupdatecheck.txt noshorturls.txt $CRAFT_PART_INSTALL/lib/python3.10/site-packages/
+      cp noupdatecheck.txt noshorturls.txt "$CRAFT_PART_INSTALL"/lib/python3.10/site-packages/
     after: [patches]
   patches:
     source: patches
