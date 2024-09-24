@@ -4,7 +4,7 @@ summary: GAM is a command line tool for Google Workspace admins.
 description: |
    GAM is a command line tool that allows administrators to manage many aspects
    of their Google Workspace (formerly G Suite / Google Apps) Account.
-version: "6.58"
+adopt-info: gam
 confinement: strict
 grade: stable
 base: core22
@@ -21,7 +21,7 @@ apps:
       - network
       - network-bind
     environment:
-      XDG_CONFIG_HOME: "$SNAP_USER_COMMON/.config/"
+      GAMCFGDIR: "$SNAP_USER_COMMON/.config/"
 
 parts:
   gam:
@@ -31,27 +31,30 @@ parts:
       - curl
       - libpcsclite-dev
       - swig
+    python-requirements: [requirements.txt]
     override-pull: |
       craftctl default
-      git checkout v6.58
+      # build the latest tagged release
+      latest_tag=$(git tag --list | grep '^v' | tail -1)
+      git checkout "${latest_tag?}"
+      craftctl set version="${latest_tag?}"
+      # patch setup.cfg to work around missing gam.var definition
+      sed -i "s/attr: gam.var.GAM_VERSION/${latest_tag?}/" src/setup.cfg
       # remove cruft (src/LICENSE just symlinks to LICENSE)
       rm -rf src/.gitignore src/LICENSE
-      # patch to use XDG config dirs
-      git apply ../../patches/src/xdg.patch
       # move the actual files into the root
       mv src/* .
       # clean up
       rmdir src
+      # work around case-sensitivity issue
+      [ -f README.md ] && ln -s README.md readme.md
       # this will be created later, but let's pre-populate it now
       mkdir -p "$CRAFT_PART_INSTALL"/lib/python3.10/site-packages/
       # retrieve roots.pem and stage it in site-packages
-      curl -o roots.pem https://pki.goog/roots.pem
-      mkdir -p "$CRAFT_PART_INSTALL"/lib/python3.10/site-packages/
-      cp roots.pem "$CRAFT_PART_INSTALL"/lib/python3.10/site-packages/
+      curl -o "$CRAFT_PART_INSTALL"/lib/python3.10/site-packages/roots.pem https://pki.goog/roots.pem
       # create behavioural override files and stage them also
-      touch noupdatecheck.txt noshorturls.txt
-      cp noupdatecheck.txt noshorturls.txt "$CRAFT_PART_INSTALL"/lib/python3.10/site-packages/
-    after: [patches]
-  patches:
-    source: patches
-    plugin: dump
+      touch "$CRAFT_PART_INSTALL"/lib/python3.10/site-packages/noupdatecheck.txt
+      touch "$CRAFT_PART_INSTALL"/lib/python3.10/site-packages/noshorturls.txt
+      # copy documentation file
+      mkdir -p "$CRAFT_PART_INSTALL"/lib/python3.10/site-packages/gam
+      cp -v GamCommands.txt "$CRAFT_PART_INSTALL"/lib/python3.10/site-packages/gam/
