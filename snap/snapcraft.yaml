@@ -37,7 +37,7 @@ parts:
       # build the latest tagged release
       latest_tag=$(git tag --list | grep '^v' | tail -1)
       git checkout "${latest_tag?}"
-      craftctl set version="${latest_tag?}"
+      craftctl set version="$(git describe --tags | sed 's/^v//')"
       # patch setup.cfg to work around missing gam.var definition
       sed -i "s/attr: gam.var.GAM_VERSION/${latest_tag?}/" src/setup.cfg
       # remove cruft (src/LICENSE just symlinks to LICENSE)
