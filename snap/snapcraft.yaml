@@ -29,7 +29,7 @@ parts:
       - curl
       - libpcsclite-dev
       - swig
-    python-requirements: [requirements.txt]
+    python-requirements: [src/requirements.txt]
     override-pull: |
       craftctl default
       # build the latest tagged release
@@ -40,19 +40,17 @@ parts:
       sed -i "s/attr: gam.var.GAM_VERSION/${latest_tag?}/" src/setup.cfg
       # remove cruft (src/LICENSE just symlinks to LICENSE)
       rm -rf src/.gitignore src/LICENSE
-      # move the actual files into the root
-      mv src/* .
-      # clean up
-      rmdir src
       # work around case-sensitivity issue
+      cd src
       [ -f README.md ] && ln -s README.md readme.md
+      cd ..
       # this will be created later, but let's pre-populate it now
-      mkdir -p "$CRAFT_PART_INSTALL"/lib/python3.10/site-packages/
+      mkdir -p "$CRAFT_PART_INSTALL"/lib/python3.12/site-packages/
       # retrieve roots.pem and stage it in site-packages
-      curl -o "$CRAFT_PART_INSTALL"/lib/python3.10/site-packages/roots.pem https://pki.goog/roots.pem
+      curl -o "$CRAFT_PART_INSTALL"/lib/python3.12/site-packages/roots.pem https://pki.goog/roots.pem
       # create behavioural override files and stage them also
-      touch "$CRAFT_PART_INSTALL"/lib/python3.10/site-packages/noupdatecheck.txt
-      touch "$CRAFT_PART_INSTALL"/lib/python3.10/site-packages/noshorturls.txt
+      touch "$CRAFT_PART_INSTALL"/lib/python3.12/site-packages/noupdatecheck.txt
+      touch "$CRAFT_PART_INSTALL"/lib/python3.12/site-packages/noshorturls.txt
       # copy documentation file
-      mkdir -p "$CRAFT_PART_INSTALL"/lib/python3.10/site-packages/gam
-      cp -v GamCommands.txt "$CRAFT_PART_INSTALL"/lib/python3.10/site-packages/gam/
+      mkdir -p "$CRAFT_PART_INSTALL"/lib/python3.12/site-packages/gam
+      cp -v src/GamCommands.txt "$CRAFT_PART_INSTALL"/lib/python3.12/site-packages/gam/
