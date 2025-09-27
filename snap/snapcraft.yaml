@@ -31,8 +31,8 @@ parts:
       - swig
     override-pull: |
       craftctl default
-      # build the latest tagged release
-      latest_tag=$(git tag --list | grep '^v' | tail -1)
+      # build the latest tagged release, skip "v722.01" missing a decimal!
+      latest_tag=$(git tag --list | grep '^v' | grep -v 'v722.01' | tail -1)
       git checkout "${latest_tag?}"
       craftctl set version=$(echo "${latest_tag?}" | sed 's/^v//')
       # remove cruft (src/{LICENSE,README.md} are just symlinks to {LICENSE,README.md})
