@@ -20,6 +20,7 @@ apps:
       - network-bind
     environment:
       GAMCFGDIR: "$SNAP_USER_COMMON/.config/"
+      PYTHONPATH: $SNAP/usr/lib/python3/dist-packages:$SNAP/lib/python3.14/site-packages:$PYTHONPATH
 
 parts:
   python-runtime:
