@@ -7,7 +7,7 @@ description: |
 adopt-info: gam
 confinement: strict
 grade: stable
-base: core24
+base: core26
 platforms:
   amd64:
   arm64:
@@ -22,7 +22,16 @@ apps:
       GAMCFGDIR: "$SNAP_USER_COMMON/.config/"
 
 parts:
+  python-runtime:
+    plugin: nil
+    stage-packages:
+      - libpython3.14-minimal
+      - libpython3.14-stdlib
+      - python3-minimal # for the "python3" symlink
+      - python3.14-minimal
+      - python3.14-venv
   gam:
+    after: [python-runtime]
     plugin: python
     source: https://github.com/GAM-team/GAM.git
     build-packages:
@@ -40,12 +49,12 @@ parts:
       # work around case-sensitivity issue
       [ -f README.md ] && ln -s README.md readme.md
       # this will be created later, but let's pre-populate it now
-      mkdir -p "$CRAFT_PART_INSTALL"/lib/python3.12/site-packages/
+      mkdir -p "$CRAFT_PART_INSTALL"/lib/python3.14/site-packages/
       # retrieve roots.pem and stage it in site-packages
-      curl -o "$CRAFT_PART_INSTALL"/lib/python3.12/site-packages/roots.pem https://pki.goog/roots.pem
+      curl -o "$CRAFT_PART_INSTALL"/lib/python3.14/site-packages/roots.pem https://pki.goog/roots.pem
       # create behavioural override files and stage them also
-      touch "$CRAFT_PART_INSTALL"/lib/python3.12/site-packages/noupdatecheck.txt
-      touch "$CRAFT_PART_INSTALL"/lib/python3.12/site-packages/noshorturls.txt
+      touch "$CRAFT_PART_INSTALL"/lib/python3.14/site-packages/noupdatecheck.txt
+      touch "$CRAFT_PART_INSTALL"/lib/python3.14/site-packages/noshorturls.txt
       # copy documentation file
-      mkdir -p "$CRAFT_PART_INSTALL"/lib/python3.12/site-packages/gam
-      cp -v src/GamCommands.txt "$CRAFT_PART_INSTALL"/lib/python3.12/site-packages/gam/
+      mkdir -p "$CRAFT_PART_INSTALL"/lib/python3.14/site-packages/gam
+      cp -v src/GamCommands.txt "$CRAFT_PART_INSTALL"/lib/python3.14/site-packages/gam/
