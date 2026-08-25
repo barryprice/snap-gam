@@ -5,9 +5,18 @@ description: |
    GAM is a command line tool that allows administrators to manage many aspects
    of their Google Workspace (formerly G Suite / Google Apps) Account.
 adopt-info: gam
+contact:
+  - https://github.com/barryprice
+issues:
+  - https://github.com/barryprice/snap-gam/issues
+source-code:
+  - https://github.com/GAM-team/GAM
+website:
+  - https://github.com/GAM-team/GAM/wiki
 confinement: strict
 grade: stable
 base: core26
+license: Apache-2.0
 platforms:
   amd64:
   arm64:
@@ -41,10 +50,12 @@ parts:
       - swig
     override-pull: |
       craftctl default
-      # build the latest tagged release, skip "v722.01" missing a decimal!
-      latest_tag=$(git tag --list | grep '^v' | grep -v 'v722.01' | tail -1)
-      git checkout "${latest_tag?}"
-      craftctl set version=$(echo "${latest_tag?}" | sed 's/^v//')
+      # Pinned upstream release tag. Renovate bumps this line automatically
+      # when GAM-team/GAM publishes a new release (see renovate.json).
+      # renovate: datasource=github-releases depName=GAM-team/GAM
+      gam_version="v7.48.00"
+      git checkout "${gam_version}"
+      craftctl set version="${gam_version#v}"
       # remove cruft (src/{LICENSE,README.md} are just symlinks to {LICENSE,README.md})
       rm -rf src/.gitignore src/LICENSE src/README.md
       # work around case-sensitivity issue
