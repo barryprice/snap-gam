@@ -14,8 +14,8 @@ https://github.com/GAM-team/GAM/issues/792
 
 ## Installing
 
-GAM 7 is published to the `7` track, which is the default. GAM 6 remains on the
-`latest` track, as the two majors are not configuration-compatible:
+GAM 7 is published to the `7` track, which is the snap's default. GAM 6 remains
+on the `latest` track, as the two majors are not configuration-compatible:
 
     sudo snap install gam-bp --channel=7/stable
 

@@ -4,6 +4,17 @@ summary: GAM is a command line tool for Google Workspace admins.
 description: |
    GAM is a command line tool that allows administrators to manage many aspects
    of their Google Workspace (formerly G Suite / Google Apps) Account.
+
+   This snap tracks GAM's major versions separately, since the two are not
+   configuration-compatible. GAM 7 is published to the `7` track (the default),
+   and GAM 6 remains on the `latest` track as a legacy release:
+
+       sudo snap install gam-bp                            # GAM 7 (default)
+       sudo snap install gam-bp --channel=latest/stable   # GAM 6 (legacy)
+
+   The snap sets GAMCFGDIR so each user's configuration lives under their own
+   snap area, enabling a multi-user install. Migrating from GAM 6 to GAM 7
+   requires reauthorising.
 adopt-info: gam
 contact:
   - https://github.com/barryprice
