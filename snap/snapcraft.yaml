@@ -64,7 +64,7 @@ parts:
       # Pinned upstream release tag. Renovate bumps this line automatically
       # when GAM-team/GAM publishes a new release (see renovate.json).
       # renovate: datasource=github-releases depName=GAM-team/GAM
-      gam_version="v7.48.01"
+      gam_version="v7.48.02"
       git checkout "${gam_version}"
       craftctl set version="${gam_version#v}"
       # remove cruft (src/{LICENSE,README.md} are just symlinks to {LICENSE,README.md})
