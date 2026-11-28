@@ -1,0 +1,40 @@
+name: pin-scope
+on:
+  pull_request:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+
+jobs:
+  pin-scope:
+    name: pin-scope
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: A Renovate PR may only move the gam_version pin
+        env:
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          if [ "${PR_AUTHOR}" != "renovate[bot]" ] || [ "${PR_HEAD_REPO}" != "${GITHUB_REPOSITORY}" ]; then
+            echo "not a same-repo Renovate PR -- pin-scope does not apply"; exit 0
+          fi
+          changed=$(git diff --unified=0 "${BASE_SHA}" HEAD -- snap/snapcraft.yaml | grep -E '^[+-][^+-]' || true)
+          [ -n "${changed}" ] || { echo "snap/snapcraft.yaml untouched"; exit 0; }
+          printf '%s\n' "${changed}"
+          pin='^[+-][[:space:]]*gam_version="v[0-9]+\.[0-9]+\.[0-9]+"$'
+          pin_only=$(printf '%s\n' "${changed}" | grep -cE "${pin}" || true)
+          total=$(printf '%s\n' "${changed}" | wc -l)
+          if [ "${total}" -ne 2 ] || [ "${pin_only}" -ne 2 ]; then
+            echo "::error::Renovate PR changes more than the gam_version pin (${pin_only}/${total} are pin lines)"; exit 1
+          fi
+          old=$(printf '%s\n' "${changed}" | grep -E '^-' | sed -E 's/.*"([^"]+)"$/\1/')
+          new=$(printf '%s\n' "${changed}" | grep -E '^\+' | sed -E 's/.*"([^"]+)"$/\1/')
+          echo "pin moves ${old} -> ${new}"; [ "${old}" != "${new}" ] || { echo "::error::pin unchanged"; exit 1; }
