@@ -22,7 +22,6 @@
     {
       "matchDepNames": ["GAM-team/GAM"],
       "allowedVersions": "/^v7\\./",
-      "matchUpdateTypes": ["minor", "patch"],
       "automerge": true,
       "platformAutomerge": true,
       "minimumReleaseAge": "1 day"
